@@ -93,10 +93,12 @@
 
         .wheel-container {
             flex: 1;
-            min-width: 400px;
+            min-width: 300px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         .wheel-wrapper {
@@ -155,55 +157,7 @@
             z-index: 5;
         }
 
-        .wheel-top-button {
-            position: absolute;
-            top: -80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(45deg, #f1c40f, #f39c12);
-            border: 3px solid #e67e22;
-            border-radius: 50px;
-            padding: 8px 16px;
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
-            transition: all 0.3s ease;
-            font-weight: bold;
-            color: #2c3e50;
-        }
 
-        .wheel-top-button:hover {
-            transform: translateX(-50%) translateY(-3px);
-            box-shadow: 0 6px 20px rgba(241, 196, 15, 0.6);
-            background: linear-gradient(45deg, #f39c12, #e67e22);
-        }
-
-        .wheel-top-button:active {
-            transform: translateX(-50%) translateY(-1px);
-            box-shadow: 0 2px 10px rgba(241, 196, 15, 0.4);
-        }
-
-        .finger-icon {
-            font-size: 1.2rem;
-            animation: point-bounce 2s ease-in-out infinite;
-        }
-
-        .button-text {
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        @keyframes point-bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-3px);
-            }
-        }
 
         .spin-btn {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
@@ -557,15 +511,30 @@
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
+                align-items: center;
+            }
+            
+            .wheel-container {
+                min-width: 280px;
+                width: 100%;
+                max-width: 350px;
+                margin: 0 auto;
             }
             
             .wheel {
-                width: 300px;
-                height: 300px;
+                width: 280px;
+                height: 280px;
+                margin: 0 auto;
             }
             
             .wheel-segment {
                 font-size: 0.7rem;
+            }
+            
+            .participants-section {
+                width: 100%;
+                max-width: 500px;
+                margin: 0 auto;
             }
         }
     </style>
@@ -589,10 +558,6 @@
             <div class="wheel-container">
                 <div class="wheel-wrapper">
                     <div class="wheel-pointer"></div>
-                    <div class="wheel-top-button" onclick="spinWheel()">
-                        <div class="finger-icon">👇</div>
-                        <div class="button-text">돌리기</div>
-                    </div>
                     <div class="wheel" id="wheel"></div>
                     <div class="wheel-center"></div>
                 </div>
@@ -822,11 +787,8 @@
             
             isSpinning = true;
             const spinBtn = document.getElementById('spinBtn');
-            const topBtn = document.querySelector('.wheel-top-button');
             spinBtn.disabled = true;
             spinBtn.textContent = '돌리는 중...';
-            topBtn.style.pointerEvents = 'none';
-            topBtn.style.opacity = '0.6';
             
             const wheel = document.getElementById('wheel');
             const segmentCount = participants.length;
@@ -875,8 +837,6 @@
                 isSpinning = false;
                 spinBtn.disabled = false;
                 spinBtn.textContent = '돌림판 돌리기! 🎲';
-                topBtn.style.pointerEvents = 'auto';
-                topBtn.style.opacity = '1';
             }, 3000);
         }
 
@@ -1426,5 +1386,5 @@
         initializeParticipants(); // 먼저 기본 참가자 초기화
         loadSavedSettings(); // 그 다음 저장된 설정 확인하여 불러오기 버튼 활성화
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862d9b4d064326f',t:'MTc1OTA1ODQxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862e644b01cea29',t:'MTc1OTA1ODkyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
