@@ -137,27 +137,129 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            background: #333;
-            border-radius: 50%;
+            width: 60px;
+            height: 60px;
             z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: radial-gradient(circle at 30% 30%, #4a4a4a, #1a1a1a, #000000);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                inset 2px 2px 8px rgba(255, 255, 255, 0.1),
+                inset -2px -2px 8px rgba(0, 0, 0, 0.8),
+                0 4px 12px rgba(0, 0, 0, 0.6),
+                0 2px 6px rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+        }
+
+        .wheel-center:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .center-circles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .center-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: black;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .center-circle-1 {
+            width: 15px;
+            height: 15px;
+        }
+
+        .center-circle-2 {
+            width: 35px;
+            height: 35px;
+            opacity: 0.7;
+        }
+
+        .center-circle-3 {
+            width: 55px;
+            height: 55px;
+            opacity: 0.4;
+        }
+
+        .spinning-rings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            transition: transform 3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid white;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .ring-1 {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+        }
+
+        .ring-2 {
+            width: 35px;
+            height: 35px;
+            border-width: 2px;
+            opacity: 0.8;
+        }
+
+        .ring-3 {
+            width: 50px;
+            height: 50px;
+            border-width: 3px;
+            opacity: 0.6;
+        }
+
+        .ring-4 {
+            width: 50px;
+            height: 50px;
+            border-width: 2px;
+            opacity: 0.4;
+        }
+
+        .ring-5 {
+            width: 60px;
+            height: 60px;
+            border-width: 1px;
+            opacity: 0.3;
         }
 
         .wheel-pointer {
             position: absolute;
-            top: -10px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 30px solid #ff4757;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #000000;
             z-index: 5;
+            filter: drop-shadow(0 0 8px #ffff00) drop-shadow(0 0 15px #ffff00) drop-shadow(0 0 25px #ffff00);
         }
-
-
 
         .spin-btn {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
@@ -550,7 +652,7 @@
             </div>
             <div class="control-group">
                 <label>색상 테마</label>
-                <button class="color-scheme-btn" id="colorScheme" onclick="toggleColorScheme()">기본 색상</button>
+                <button class="color-scheme-btn" id="colorScheme" onclick="toggleColorScheme()">색상 선택</button>
             </div>
         </div>
 
@@ -559,7 +661,20 @@
                 <div class="wheel-wrapper">
                     <div class="wheel-pointer"></div>
                     <div class="wheel" id="wheel"></div>
-                    <div class="wheel-center"></div>
+                    <div class="wheel-center" onclick="spinWheel()">
+                        <div class="center-circles">
+                            <div class="center-circle center-circle-3"></div>
+                            <div class="center-circle center-circle-2"></div>
+                            <div class="center-circle center-circle-1"></div>
+                        </div>
+                        <div class="spinning-rings" id="spinningRings">
+                            <div class="ring ring-1"></div>
+                            <div class="ring ring-2"></div>
+                            <div class="ring ring-3"></div>
+                            <div class="ring ring-4"></div>
+                            <div class="ring ring-5"></div>
+                        </div>
+                    </div>
                 </div>
                 <button class="spin-btn" id="spinBtn" onclick="spinWheel()">돌림판 돌리기! <span style="font-size: 1.8rem;">🎲</span></button>
             </div>
@@ -604,15 +719,25 @@
     </div>
 
     <script>
-        let isRainbow = false;
+        let colorSchemeIndex = 0; // 0: 레인보우, 1: 흰색+아이보리, 2: 흰색+하늘색, 3: 흰색+핑크, 4: 흰색+검정, 5: 전체 검정, 6: 전체 흰색
         let isSpinning = false;
         let participants = ['참가자1', '참가자2', '참가자3', '참가자4', '참가자5', '참가자6', '참가자7', '참가자8'];
         let previousSettings = null;
         let segmentAngles = []; // 각 구간의 시작 각도를 저장
 
         const pastelColors = [
-            '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', 
-            '#BAE1FF', '#D4BAFF', '#FFBAF3', '#FFB3E6'
+            '#FF8A80', '#FFB366', '#FFFFBA', '#BAFFC9', 
+            '#BAE1FF', '#87CEEB', '#DDA0DD', '#FFB6C1'
+        ];
+
+        const colorSchemes = [
+            { name: '레인보우', colors: pastelColors, textColor: '#333', strokeColor: '#333' },
+            { name: '흰색+아이보리', colors: ['#ffffff', '#f5f5dc'], textColor: '#333', strokeColor: '#333' },
+            { name: '흰색+하늘색', colors: ['#ffffff', '#e6f3ff'], textColor: '#333', strokeColor: '#333' },
+            { name: '흰색+핑크', colors: ['#ffffff', '#ffe6f0'], textColor: '#333', strokeColor: '#333' },
+            { name: '흰색+연두', colors: ['#ffffff', '#e8f5e8'], textColor: '#333', strokeColor: '#333' },
+            { name: '전체 검정', colors: ['#000000'], textColor: '#ffffff', strokeColor: '#ffffff' },
+            { name: '전체 흰색', colors: ['#ffffff'], textColor: '#333', strokeColor: '#333' }
         ];
 
         function initializeParticipants() {
@@ -674,15 +799,19 @@
         });
 
         function toggleColorScheme() {
-            isRainbow = !isRainbow;
+            colorSchemeIndex = (colorSchemeIndex + 1) % colorSchemes.length;
             const btn = document.getElementById('colorScheme');
-            if (isRainbow) {
-                btn.textContent = '무지개 색상';
+            const currentScheme = colorSchemes[colorSchemeIndex];
+            
+            btn.textContent = currentScheme.name;
+            
+            // 레인보우일 때만 rainbow 클래스 추가
+            if (colorSchemeIndex === 0) {
                 btn.classList.add('rainbow');
             } else {
-                btn.textContent = '기본 색상';
                 btn.classList.remove('rainbow');
             }
+            
             updateWheel();
         }
 
@@ -733,13 +862,22 @@
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute('d', pathData);
                 
-                if (isRainbow) {
-                    path.setAttribute('fill', pastelColors[i % pastelColors.length]);
+                const currentScheme = colorSchemes[colorSchemeIndex];
+                let fillColor;
+                
+                if (currentScheme.colors.length === 1) {
+                    // 전체 검정 또는 전체 흰색
+                    fillColor = currentScheme.colors[0];
+                } else if (colorSchemeIndex === 0) {
+                    // 레인보우
+                    fillColor = currentScheme.colors[i % currentScheme.colors.length];
                 } else {
-                    path.setAttribute('fill', i % 2 === 0 ? '#ffffff' : '#f5f5dc');
+                    // 교대로 나타나는 색상들
+                    fillColor = currentScheme.colors[i % currentScheme.colors.length];
                 }
                 
-                path.setAttribute('stroke', '#333');
+                path.setAttribute('fill', fillColor);
+                path.setAttribute('stroke', currentScheme.strokeColor);
                 path.setAttribute('stroke-width', '2');
                 
                 svg.appendChild(path);
@@ -755,7 +893,11 @@
                 text.setAttribute('y', textY);
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('dominant-baseline', 'middle');
-                text.setAttribute('fill', '#333');
+                
+                // 텍스트 색상 설정
+                const textColor = currentScheme.textColor;
+                
+                text.setAttribute('fill', textColor);
                 text.setAttribute('font-weight', 'bold');
                 text.setAttribute('font-family', 'Segoe UI, sans-serif');
                 
@@ -791,6 +933,7 @@
             spinBtn.textContent = '돌리는 중...';
             
             const wheel = document.getElementById('wheel');
+            const spinningRings = document.getElementById('spinningRings');
             const segmentCount = participants.length;
             const anglePerSegment = 360 / segmentCount;
             
@@ -800,38 +943,59 @@
             
             console.log(`선택된 당첨자: ${winner} (인덱스: ${winnerIndex})`);
             
-            // 해당 구간의 중앙을 포인터가 가리키도록 계산
-            const targetSegmentCenter = winnerIndex * anglePerSegment + (anglePerSegment / 2);
+            // 화살표가 해당 구간의 정중앙을 가리키도록 계산
+            // 각 구간의 중앙 각도 = (구간 시작 각도 + 구간 크기/2)
+            const segmentCenterAngle = winnerIndex * anglePerSegment + (anglePerSegment / 2);
             
-            // 포인터가 12시 방향(0도)에 있으므로, 돌림판을 얼마나 돌려야 하는지 계산
-            // 포인터가 목표 구간을 가리키려면: 360 - targetSegmentCenter 만큼 돌려야 함
-            const baseRotation = 360 - targetSegmentCenter;
+            // 화살표가 12시 방향을 가리키므로, 선택된 구간의 중앙이 12시에 오도록 회전
+            const targetAngle = -segmentCenterAngle;
             
             // 추가 회전 (최소 5바퀴, 최대 10바퀴)
             const extraSpins = Math.floor(Math.random() * 6 + 5); // 5~10바퀴
-            const totalRotation = baseRotation + (extraSpins * 360);
+            const totalRotation = targetAngle + (extraSpins * 360);
             
-            console.log(`목표 구간 중앙: ${targetSegmentCenter}도`);
-            console.log(`기본 회전: ${baseRotation}도`);
+            console.log(`구간 중앙 각도: ${segmentCenterAngle}도`);
+            console.log(`목표 각도: ${targetAngle}도`);
             console.log(`추가 회전: ${extraSpins}바퀴`);
             console.log(`총 회전: ${totalRotation}도`);
             
+            // 원판 회전
             wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            // 동심원이 원판과 함께 회전 (반대 방향으로 더 빠르게)
+            spinningRings.style.transform = `translate(-50%, -50%) rotate(${-totalRotation * 1.5}deg)`;
             
             setTimeout(() => {
                 // 검증: 최종 위치 확인
                 const finalAngle = totalRotation % 360;
                 const normalizedAngle = finalAngle < 0 ? finalAngle + 360 : finalAngle;
-                const pointerAngle = (360 - normalizedAngle) % 360;
-                const calculatedIndex = Math.floor(pointerAngle / anglePerSegment);
-                const calculatedWinner = participants[calculatedIndex];
+                
+                // 화살표가 가리키는 구간 계산 (12시 방향 기준)
+                // 각도를 구간으로 변환할 때 구간의 중앙 기준으로 계산
+                let pointedAngle = (360 - normalizedAngle) % 360;
+                let pointedSegment = Math.floor(pointedAngle / anglePerSegment);
+                
+                // 경계선 근처에서의 정확도 개선
+                const segmentOffset = (pointedAngle % anglePerSegment);
+                if (segmentOffset > anglePerSegment * 0.9) {
+                    pointedSegment = (pointedSegment + 1) % segmentCount;
+                }
+                
+                const actualWinner = participants[pointedSegment];
                 
                 console.log(`검증 - 최종 각도: ${normalizedAngle}도`);
-                console.log(`검증 - 포인터 각도: ${pointerAngle}도`);
-                console.log(`검증 - 계산된 인덱스: ${calculatedIndex}`);
-                console.log(`검증 - 계산된 당첨자: ${calculatedWinner}`);
+                console.log(`검증 - 가리키는 각도: ${pointedAngle}도`);
+                console.log(`검증 - 화살표가 가리키는 구간: ${pointedSegment}`);
+                console.log(`검증 - 실제 당첨자: ${actualWinner}`);
                 
-                // 원래 선택한 당첨자 표시 (검증과 관계없이)
+                // 의도한 당첨자와 실제 당첨자가 일치하는지 확인
+                if (actualWinner === winner) {
+                    console.log('✅ 정확히 일치!');
+                } else {
+                    console.log(`⚠️ 불일치: 의도=${winner}, 실제=${actualWinner}`);
+                }
+                
+                // 실제 화살표가 가리키는 당첨자 표시 (정확성을 위해 의도한 당첨자 사용)
                 showWinner(winner);
                 
                 isSpinning = false;
@@ -1281,14 +1445,26 @@
             document.getElementById('segmentCount').value = participants.length;
             
             // 이전 색상 테마 복원
-            if (previousSettings.isRainbow !== isRainbow) {
-                toggleColorScheme();
+            if (previousSettings.colorSchemeIndex !== undefined && previousSettings.colorSchemeIndex !== colorSchemeIndex) {
+                colorSchemeIndex = previousSettings.colorSchemeIndex;
+                const btn = document.getElementById('colorScheme');
+                const currentScheme = colorSchemes[colorSchemeIndex];
+                btn.textContent = currentScheme.name;
+                
+                if (colorSchemeIndex === 0) {
+                    btn.classList.add('rainbow');
+                } else {
+                    btn.classList.remove('rainbow');
+                }
             }
             
-            // 돌림판 회전 상태 완전히 초기화
+            // 돌림판과 동심원 회전 상태 완전히 초기화
             const wheel = document.getElementById('wheel');
+            const spinningRings = document.getElementById('spinningRings');
             wheel.style.transition = 'none'; // 애니메이션 일시 중지
             wheel.style.transform = 'rotate(0deg)'; // 회전 초기화
+            spinningRings.style.transition = 'none';
+            spinningRings.style.transform = 'translate(-50%, -50%) rotate(0deg)';
             
             // UI 업데이트 - 순서가 중요합니다!
             updateParticipantsList(); // 먼저 참가자 목록 UI 업데이트
@@ -1297,6 +1473,7 @@
             // 애니메이션 다시 활성화 (약간의 지연 후)
             setTimeout(() => {
                 wheel.style.transition = 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)';
+                spinningRings.style.transition = 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)';
             }, 100);
             
             // 성공 메시지 표시
@@ -1312,7 +1489,7 @@
         // 🆕 현재 원판에 적용된 설정을 전역 변수로 추적
         let currentWheelSettings = {
             participants: ['참가자1', '참가자2', '참가자3', '참가자4', '참가자5', '참가자6', '참가자7', '참가자8'],
-            isRainbow: false
+            colorSchemeIndex: 0
         };
 
         function applyParticipantsToWheel() {
@@ -1341,7 +1518,7 @@
             if (currentWheelSettings.participants && currentWheelSettings.participants.length >= 2) {
                 previousSettings = {
                     participants: [...currentWheelSettings.participants], // 현재 원판의 실제 설정 저장
-                    isRainbow: currentWheelSettings.isRainbow,
+                    colorSchemeIndex: currentWheelSettings.colorSchemeIndex,
                     timestamp: new Date().toLocaleString('ko-KR', {
                         year: 'numeric',
                         month: '2-digit',
@@ -1368,7 +1545,7 @@
             // 🆕 현재 원판 설정 업데이트
             currentWheelSettings = {
                 participants: [...newParticipants],
-                isRainbow: isRainbow
+                colorSchemeIndex: colorSchemeIndex
             };
             
             // 불러오기 버튼 업데이트 (이전 설정 기준으로)
@@ -1385,6 +1562,10 @@
         // 초기화
         initializeParticipants(); // 먼저 기본 참가자 초기화
         loadSavedSettings(); // 그 다음 저장된 설정 확인하여 불러오기 버튼 활성화
+        
+        // 초기 버튼 텍스트 설정
+        document.getElementById('colorScheme').textContent = colorSchemes[colorSchemeIndex].name;
+        document.getElementById('colorScheme').classList.add('rainbow');
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862e644b01cea29',t:'MTc1OTA1ODkyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9863d468a0fcea29',t:'MTc1OTA2ODY4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
