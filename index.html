@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>원형 돌림판</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        input, select, button {
+            padding: 10px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .color-scheme-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .color-scheme-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .color-scheme-btn.rainbow {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef, #fecfef, #a8edea, #fed6e3);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .wheel-container {
+            flex: 1;
+            min-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .wheel {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 3s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 4px solid #333;
+            overflow: hidden;
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #333;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #333;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff4757;
+            z-index: 5;
+        }
+
+        .spin-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .spin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .participants-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .participants-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9ff;
+            text-align: center;
+        }
+
+        .file-upload-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .file-upload-btn:hover {
+            background: #5a67d8;
+        }
+
+        .reset-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .reset-btn:hover {
+            background: #ff5252;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .upload-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .upload-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .upload-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .participants-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .participant-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .participant-input input {
+            flex: 1;
+            margin: 0;
+        }
+
+        .remove-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: #ff3742;
+        }
+
+        .add-btn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .add-btn:hover {
+            background: #26d063;
+        }
+
+        .apply-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 1.1rem;
+        }
+
+        .apply-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: popIn 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .popup-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .popup-winner {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: winner-spin 3s ease-out forwards;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes winner-spin {
+            0% {
+                transform: rotateY(0deg) scale(1);
+            }
+            8.33% {
+                transform: rotateY(90deg) scale(1.05);
+            }
+            16.67% {
+                transform: rotateY(180deg) scale(1.1);
+            }
+            25% {
+                transform: rotateY(270deg) scale(1.05);
+            }
+            33.33% {
+                transform: rotateY(360deg) scale(1);
+            }
+            41.67% {
+                transform: rotateY(450deg) scale(1.05);
+            }
+            50% {
+                transform: rotateY(540deg) scale(1.1);
+            }
+            58.33% {
+                transform: rotateY(630deg) scale(1.05);
+            }
+            66.67% {
+                transform: rotateY(720deg) scale(1);
+            }
+            75% {
+                transform: rotateY(810deg) scale(1.05);
+            }
+            83.33% {
+                transform: rotateY(900deg) scale(1.1);
+            }
+            91.67% {
+                transform: rotateY(990deg) scale(1.05);
+            }
+            100% {
+                transform: rotateY(1080deg) scale(1);
+            }
+        }
+
+        .popup-close {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .popup-close:hover {
+            background: #5a67d8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            animation: confetti-fall 4s linear infinite;
+            z-index: 1002;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(400px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti-1 { background: #ff6b6b; animation-delay: 0s; }
+        .confetti-2 { background: #4ecdc4; animation-delay: 0.1s; }
+        .confetti-3 { background: #45b7d1; animation-delay: 0.2s; }
+        .confetti-4 { background: #96ceb4; animation-delay: 0.3s; }
+        .confetti-5 { background: #ffeaa7; animation-delay: 0.4s; }
+        .confetti-6 { background: #dda0dd; animation-delay: 0.5s; }
+        .confetti-7 { background: #98d8c8; animation-delay: 0.6s; }
+        .confetti-8 { background: #f7dc6f; animation-delay: 0.7s; }
+        .confetti-9 { background: #bb8fce; animation-delay: 0.8s; }
+        .confetti-10 { background: #85c1e9; animation-delay: 0.9s; }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .wheel {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .wheel-segment {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎯 원형 돌림판</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>참가자 수</label>
+                <input type="number" id="segmentCount" min="2" max="101" value="8">
+            </div>
+            <div class="control-group">
+                <label>색상 테마</label>
+                <button class="color-scheme-btn" id="colorScheme" onclick="toggleColorScheme()">기본 색상</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="wheel-container">
+                <div class="wheel-wrapper">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel"></div>
+                    <div class="wheel-center"></div>
+                </div>
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">돌림판 돌리기! 🎲</button>
+            </div>
+
+            <div class="participants-section">
+                <h3 class="participants-title">참가자 목록</h3>
+                
+                <div class="file-upload-section">
+                    <div>📁 파일에서 참가자 불러오기</div>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <input type="file" id="fileInput" class="file-input" accept=".txt,.csv" onchange="handleFileUpload(event)">
+                        <button class="file-upload-btn" onclick="document.getElementById('fileInput').click()">파일 선택</button>
+                        <button class="reset-btn" onclick="resetToDefault()">🔄 기본값으로 되돌리기</button>
+                    </div>
+                    <div class="upload-info">
+                        지원 형식: 텍스트(.txt), CSV(.csv)<br>
+                        각 줄마다 한 명씩 또는 쉼표로 구분하여 작성해주세요<br>
+                        <strong>💡 한글 깨짐 방지:</strong> 메모장에서 "다른 이름으로 저장" → 인코딩을 "UTF-8"로 선택하여 저장
+                    </div>
+                    <div id="uploadStatus"></div>
+                </div>
+
+                <div class="participants-container">
+                    <div id="participantsList"></div>
+                    <button class="add-btn" onclick="addParticipant()">+ 참가자 추가</button>
+                    <button class="apply-btn" onclick="applyParticipantsToWheel()">🎯 원판에 적용하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <div class="popup-title">🎉 당첨자 발표! 🎉</div>
+            <div class="popup-winner" id="popupWinner"></div>
+            <button class="popup-close" onclick="closePopup()">확인</button>
+        </div>
+    </div>
+
+    <script>
+        let isRainbow = false;
+        let isSpinning = false;
+        let participants = ['참가자1', '참가자2', '참가자3', '참가자4', '참가자5', '참가자6', '참가자7', '참가자8'];
+
+        const pastelColors = [
+            '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', 
+            '#BAE1FF', '#D4BAFF', '#FFBAF3', '#FFB3E6'
+        ];
+
+        function initializeParticipants() {
+            updateParticipantsList();
+            updateWheel();
+        }
+
+        function updateParticipantsList() {
+            const container = document.getElementById('participantsList');
+            container.innerHTML = '';
+            
+            participants.forEach((participant, index) => {
+                const div = document.createElement('div');
+                div.className = 'participant-input';
+                div.innerHTML = `
+                    <input type="text" value="${participant}" onchange="updateParticipant(${index}, this.value)" placeholder="참가자 이름">
+                    ${participants.length > 2 ? `<button class="remove-btn" onclick="removeParticipant(${index})">×</button>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addParticipant() {
+            if (participants.length < 101) {
+                participants.push(`참가자${participants.length + 1}`);
+                document.getElementById('segmentCount').value = participants.length;
+                updateParticipantsList();
+                // updateWheel(); 제거 - 참가자 추가 시 자동으로 원판에 적용하지 않음
+            }
+        }
+
+        function removeParticipant(index) {
+            if (participants.length > 2) {
+                participants.splice(index, 1);
+                document.getElementById('segmentCount').value = participants.length;
+                updateParticipantsList();
+                // updateWheel(); 제거 - 참가자 제거 시 자동으로 원판에 적용하지 않음
+            }
+        }
+
+        function updateParticipant(index, value) {
+            participants[index] = value || `참가자${index + 1}`;
+            // updateWheel(); 제거 - 참가자 이름 수정 시 자동으로 원판에 적용하지 않음
+        }
+
+        document.getElementById('segmentCount').addEventListener('change', function() {
+            const count = parseInt(this.value);
+            if (count >= 2 && count <= 101) {
+                while (participants.length < count) {
+                    participants.push(`참가자${participants.length + 1}`);
+                }
+                while (participants.length > count) {
+                    participants.pop();
+                }
+                updateParticipantsList();
+                // updateWheel(); 제거 - 참가자 수 변경 시 자동으로 원판에 적용하지 않음
+            }
+        });
+
+        function toggleColorScheme() {
+            isRainbow = !isRainbow;
+            const btn = document.getElementById('colorScheme');
+            if (isRainbow) {
+                btn.textContent = '무지개 색상';
+                btn.classList.add('rainbow');
+            } else {
+                btn.textContent = '기본 색상';
+                btn.classList.remove('rainbow');
+            }
+            updateWheel();
+        }
+
+        function updateWheel() {
+            const wheel = document.getElementById('wheel');
+            const segmentCount = participants.length;
+            const anglePerSegment = 360 / segmentCount;
+            
+            wheel.innerHTML = '';
+            
+            // SVG를 사용하여 정확한 원형 분할
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+            svg.setAttribute('viewBox', '0 0 400 400');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            
+            const centerX = 200;
+            const centerY = 200;
+            const radius = 190;
+            
+            for (let i = 0; i < segmentCount; i++) {
+                const startAngle = (i * anglePerSegment - 90) * Math.PI / 180;
+                const endAngle = ((i + 1) * anglePerSegment - 90) * Math.PI / 180;
+                
+                const x1 = centerX + radius * Math.cos(startAngle);
+                const y1 = centerY + radius * Math.sin(startAngle);
+                const x2 = centerX + radius * Math.cos(endAngle);
+                const y2 = centerY + radius * Math.sin(endAngle);
+                
+                const largeArcFlag = anglePerSegment > 180 ? 1 : 0;
+                
+                const pathData = [
+                    `M ${centerX} ${centerY}`,
+                    `L ${x1} ${y1}`,
+                    `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                    'Z'
+                ].join(' ');
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathData);
+                
+                if (isRainbow) {
+                    path.setAttribute('fill', pastelColors[i % pastelColors.length]);
+                } else {
+                    path.setAttribute('fill', i % 2 === 0 ? '#ffffff' : '#f5f5dc');
+                }
+                
+                path.setAttribute('stroke', '#333');
+                path.setAttribute('stroke-width', '2');
+                
+                svg.appendChild(path);
+                
+                // 텍스트 추가
+                const textAngle = (i + 0.5) * anglePerSegment - 90;
+                const textRadius = radius * 0.7;
+                const textX = centerX + textRadius * Math.cos(textAngle * Math.PI / 180);
+                const textY = centerY + textRadius * Math.sin(textAngle * Math.PI / 180);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', textX);
+                text.setAttribute('y', textY);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#333');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('font-family', 'Segoe UI, sans-serif');
+                
+                // 글자 크기 조절
+                let fontSize;
+                if (segmentCount > 30) fontSize = '8px';
+                else if (segmentCount > 20) fontSize = '10px';
+                else if (segmentCount > 10) fontSize = '12px';
+                else fontSize = '14px';
+                
+                text.setAttribute('font-size', fontSize);
+                
+                // 텍스트 회전
+                if (textAngle > 90 && textAngle < 270) {
+                    text.setAttribute('transform', `rotate(${textAngle + 180} ${textX} ${textY})`);
+                } else {
+                    text.setAttribute('transform', `rotate(${textAngle} ${textX} ${textY})`);
+                }
+                
+                text.textContent = participants[i];
+                svg.appendChild(text);
+            }
+            
+            wheel.appendChild(svg);
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            spinBtn.textContent = '돌리는 중...';
+            
+            const wheel = document.getElementById('wheel');
+            const segmentCount = participants.length;
+            const anglePerSegment = 360 / segmentCount;
+            
+            const minSpins = 5;
+            const maxSpins = 10;
+            const spins = Math.random() * (maxSpins - minSpins) + minSpins;
+            const finalAngle = Math.random() * 360;
+            const totalRotation = spins * 360 + finalAngle;
+            
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            setTimeout(() => {
+                const normalizedAngle = (360 - (finalAngle % 360)) % 360;
+                const winnerIndex = Math.floor(normalizedAngle / anglePerSegment);
+                const winner = participants[winnerIndex];
+                
+                showWinner(winner);
+                
+                isSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = '돌림판 돌리기! 🎲';
+            }, 3000);
+        }
+
+        function showWinner(winner) {
+            document.getElementById('popupWinner').textContent = winner;
+            document.getElementById('popup').style.display = 'flex';
+            createConfetti();
+            playWinnerSound();
+        }
+
+        function playWinnerSound() {
+            // Web Audio API를 사용한 축하 사운드 생성
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // 팡파레 같은 축하 사운드 생성
+                const playNote = (frequency, startTime, duration) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(frequency, startTime);
+                    oscillator.type = 'triangle';
+                    
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                };
+                
+                // 축하 멜로디 (도-미-솔-도)
+                const now = audioContext.currentTime;
+                playNote(523.25, now, 0.3); // 도
+                playNote(659.25, now + 0.15, 0.3); // 미
+                playNote(783.99, now + 0.3, 0.3); // 솔
+                playNote(1046.50, now + 0.45, 0.5); // 높은 도
+                
+                // 드럼 효과
+                const createDrum = (startTime) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    const filter = audioContext.createBiquadFilter();
+                    
+                    oscillator.connect(filter);
+                    filter.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(60, startTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(30, startTime + 0.1);
+                    oscillator.type = 'triangle';
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(200, startTime);
+                    
+                    gainNode.gain.setValueAtTime(0.5, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.2);
+                };
+                
+                createDrum(now + 0.6);
+                createDrum(now + 0.8);
+                
+            } catch (error) {
+                console.log('음향 효과를 재생할 수 없습니다:', error);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f', '#bb8fce', '#85c1e9'];
+            const popupContent = document.querySelector('.popup-content');
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 90 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                    confetti.style.animationDelay = Math.random() * 1 + 's';
+                    
+                    // 다양한 모양 만들기
+                    const shapes = ['circle', 'square', 'triangle', 'star'];
+                    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                    
+                    if (shape === 'circle') {
+                        confetti.style.borderRadius = '50%';
+                    } else if (shape === 'triangle') {
+                        confetti.style.width = '0';
+                        confetti.style.height = '0';
+                        confetti.style.borderLeft = '5px solid transparent';
+                        confetti.style.borderRight = '5px solid transparent';
+                        confetti.style.borderBottom = '10px solid ' + confetti.style.background;
+                        confetti.style.background = 'transparent';
+                    } else if (shape === 'star') {
+                        confetti.innerHTML = '★';
+                        confetti.style.background = 'transparent';
+                        confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.fontSize = '12px';
+                        confetti.style.width = 'auto';
+                        confetti.style.height = 'auto';
+                    }
+                    
+                    popupContent.appendChild(confetti);
+                    
+                    // 5초 후 제거
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            confetti.parentNode.removeChild(confetti);
+                        }
+                    }, 5000);
+                }, i * 100);
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            // 남은 콘페티 제거
+            const confettis = document.querySelectorAll('.confetti');
+            confettis.forEach(confetti => {
+                if (confetti.parentNode) {
+                    confetti.parentNode.removeChild(confetti);
+                }
+            });
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = '<div class="upload-status">파일을 읽는 중...</div>';
+
+            const fileName = file.name.toLowerCase();
+            const fileExtension = fileName.split('.').pop();
+
+            if (fileExtension === 'txt' || fileExtension === 'csv') {
+                handleTextFile(file);
+            } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                handleExcelFile(file);
+            } else if (fileExtension === 'docx' || fileExtension === 'doc') {
+                handleWordFile(file);
+            } else {
+                showUploadError('지원하지 않는 파일 형식입니다.');
+            }
+        }
+
+        function handleTextFile(file) {
+            // 먼저 UTF-8로 시도
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let text = e.target.result;
+                    
+                    // 한글이 깨졌는지 확인 (물음표나 이상한 문자가 많이 포함된 경우)
+                    const brokenChars = (text.match(/[�?]/g) || []).length;
+                    const totalChars = text.length;
+                    
+                    if (brokenChars > totalChars * 0.1 || text.includes('ï»¿')) {
+                        // UTF-8로 읽기 실패, EUC-KR로 다시 시도
+                        tryReadWithEUCKR(file);
+                        return;
+                    }
+                    
+                    const names = parseTextContent(text);
+                    updateParticipantsFromFile(names);
+                } catch (error) {
+                    // UTF-8 실패시 EUC-KR로 재시도
+                    tryReadWithEUCKR(file);
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function tryReadWithEUCKR(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    const decoder = new TextDecoder('euc-kr');
+                    const text = decoder.decode(arrayBuffer);
+                    
+                    const names = parseTextContent(text);
+                    updateParticipantsFromFile(names);
+                } catch (error) {
+                    // EUC-KR도 실패하면 CP949 시도
+                    tryReadWithCP949(file);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function tryReadWithCP949(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    // CP949는 브라우저에서 직접 지원하지 않으므로 EUC-KR로 대체
+                    const decoder = new TextDecoder('euc-kr');
+                    let text = decoder.decode(arrayBuffer);
+                    
+                    // 여전히 깨진다면 바이트를 직접 처리
+                    if (text.includes('�')) {
+                        text = handleBrokenEncoding(arrayBuffer);
+                    }
+                    
+                    const names = parseTextContent(text);
+                    updateParticipantsFromFile(names);
+                } catch (error) {
+                    showUploadError('파일 인코딩을 읽을 수 없습니다. UTF-8 또는 EUC-KR 인코딩으로 저장된 파일을 사용해주세요.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handleBrokenEncoding(arrayBuffer) {
+            // 바이트 배열을 직접 처리하여 한글 복구 시도
+            const bytes = new Uint8Array(arrayBuffer);
+            let result = '';
+            
+            for (let i = 0; i < bytes.length; i++) {
+                const byte = bytes[i];
+                
+                // ASCII 범위 (영문, 숫자, 기본 기호)
+                if (byte < 128) {
+                    result += String.fromCharCode(byte);
+                }
+                // 한글 범위 추정 (EUC-KR)
+                else if (byte >= 0xA1 && byte <= 0xFE && i + 1 < bytes.length) {
+                    const nextByte = bytes[i + 1];
+                    if (nextByte >= 0xA1 && nextByte <= 0xFE) {
+                        // EUC-KR 한글 코드 범위
+                        const code = (byte << 8) | nextByte;
+                        try {
+                            // 간단한 EUC-KR to Unicode 변환 시도
+                            result += String.fromCharCode(code);
+                        } catch (e) {
+                            result += '?';
+                        }
+                        i++; // 다음 바이트 건너뛰기
+                    } else {
+                        result += '?';
+                    }
+                }
+                else {
+                    // 기타 문자는 그대로 처리
+                    result += String.fromCharCode(byte);
+                }
+            }
+            
+            return result;
+        }
+
+        function handleExcelFile(file) {
+            // 엑셀 파일의 경우 기본적인 CSV 형태로 처리
+            // 실제 엑셀 파일 처리를 위해서는 외부 라이브러리가 필요하지만
+            // 여기서는 사용자가 CSV로 저장한 파일을 처리하는 방식으로 안내
+            showUploadError('엑셀 파일은 CSV 형식으로 저장한 후 업로드해주세요. (파일 > 다른 이름으로 저장 > CSV 형식 선택)');
+        }
+
+        function handleWordFile(file) {
+            // 워드 파일의 경우 텍스트 형태로 처리
+            // 실제 워드 파일 처리를 위해서는 외부 라이브러리가 필요하지만
+            // 여기서는 사용자가 텍스트로 저장한 파일을 처리하는 방식으로 안내
+            showUploadError('워드 파일은 텍스트 형식(.txt)으로 저장한 후 업로드해주세요. (파일 > 다른 이름으로 저장 > 텍스트 형식 선택)');
+        }
+
+        function parseTextContent(text) {
+            // 다양한 구분자로 분리 시도
+            let names = [];
+            
+            // 줄바꿈으로 분리
+            const lines = text.split(/\r?\n/);
+            for (let line of lines) {
+                line = line.trim();
+                if (line) {
+                    // 쉼표로 구분된 경우
+                    if (line.includes(',')) {
+                        const commaSeparated = line.split(',').map(name => name.trim()).filter(name => name);
+                        names.push(...commaSeparated);
+                    }
+                    // 탭으로 구분된 경우
+                    else if (line.includes('\t')) {
+                        const tabSeparated = line.split('\t').map(name => name.trim()).filter(name => name);
+                        names.push(...tabSeparated);
+                    }
+                    // 공백으로 구분된 경우 (여러 공백)
+                    else if (line.includes('  ')) {
+                        const spaceSeparated = line.split(/\s+/).map(name => name.trim()).filter(name => name);
+                        names.push(...spaceSeparated);
+                    }
+                    // 단일 이름
+                    else {
+                        names.push(line);
+                    }
+                }
+            }
+            
+            // 중복 제거 및 빈 값 제거
+            names = [...new Set(names)].filter(name => name && name.length > 0);
+            
+            return names;
+        }
+
+        function updateParticipantsFromFile(names) {
+            if (names.length === 0) {
+                showUploadError('파일에서 참가자 이름을 찾을 수 없습니다.');
+                return;
+            }
+
+            if (names.length > 101) {
+                showUploadError(`참가자가 너무 많습니다. (${names.length}명) 최대 101명까지 가능합니다.`);
+                return;
+            }
+
+            if (names.length < 2) {
+                showUploadError('최소 2명의 참가자가 필요합니다.');
+                return;
+            }
+
+            participants = names;
+            document.getElementById('segmentCount').value = participants.length;
+            updateParticipantsList();
+            // updateWheel(); 제거 - 파일 업로드 시 자동으로 원판에 적용하지 않음
+            
+            showUploadSuccess(`${names.length}명의 참가자를 불러왔습니다! "🎯 원판에 적용하기" 버튼을 눌러주세요.`);
+        }
+
+        function showUploadSuccess(message) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="upload-status upload-success">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        function showUploadError(message) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="upload-status upload-error">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function resetToDefault() {
+            participants = ['참가자1', '참가자2', '참가자3', '참가자4', '참가자5', '참가자6', '참가자7', '참가자8'];
+            document.getElementById('segmentCount').value = 8;
+            document.getElementById('fileInput').value = '';
+            updateParticipantsList();
+            updateWheel();
+            
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = '<div class="upload-status upload-success">기본 참가자 목록으로 되돌렸습니다!</div>';
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 2000);
+        }
+
+        function applyParticipantsToWheel() {
+            // 현재 입력된 참가자들을 수집
+            const inputs = document.querySelectorAll('#participantsList input');
+            const newParticipants = [];
+            
+            inputs.forEach(input => {
+                const name = input.value.trim();
+                if (name) {
+                    newParticipants.push(name);
+                }
+            });
+            
+            if (newParticipants.length < 2) {
+                alert('최소 2명의 참가자가 필요합니다.');
+                return;
+            }
+            
+            if (newParticipants.length > 101) {
+                alert('최대 101명까지만 가능합니다.');
+                return;
+            }
+            
+            participants = newParticipants;
+            document.getElementById('segmentCount').value = participants.length;
+            updateWheel();
+            
+            // 성공 메시지 표시
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="upload-status upload-success">${participants.length}명의 참가자가 원판에 적용되었습니다!</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // 초기화
+        initializeParticipants();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862371da60b723a',t:'MTc1OTA1MTc1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
