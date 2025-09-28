@@ -279,6 +279,21 @@
             cursor: not-allowed;
         }
 
+        .practice-btn {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .practice-btn:hover {
+            background: #d35400;
+        }
+
         .reset-btn {
             background: #ff6b6b;
             color: white;
@@ -593,13 +608,15 @@
                         <input type="file" id="fileInput" class="file-input" accept=".txt,.csv" onchange="handleFileUpload(event)">
                         <button class="file-upload-btn" onclick="document.getElementById('fileInput').click()">파일 선택</button>
                         <button class="file-upload-btn" id="loadPreviousBtn" onclick="loadPreviousSettings()" disabled title="이전 설정이 없습니다">📋 불러오기</button>
+                        <button class="practice-btn" onclick="loadPracticeFile()">📝 연습파일</button>
                         <button class="reset-btn" onclick="resetToDefault()">🔄 기본값으로 되돌리기</button>
                     </div>
                     <div class="upload-info">
                         지원 형식: 텍스트(.txt), CSV(.csv)<br>
                         각 줄마다 한 명씩 또는 쉼표로 구분하여 작성해주세요<br>
                         <strong>💡 한글 깨짐 방지:</strong> 메모장에서 "다른 이름으로 저장" → 인코딩을 "UTF-8"로 선택하여 저장<br>
-                        <strong>📋 불러오기:</strong> 바로 직전에 적용했던 돌림판 설정을 다시 불러옵니다
+                        <strong>📋 불러오기:</strong> 바로 직전에 적용했던 돌림판 설정을 다시 불러옵니다<br>
+                        <strong>📝 연습파일:</strong> 32명의 샘플 참가자 목록을 불러옵니다
                     </div>
                     <div id="uploadStatus"></div>
                 </div>
@@ -1194,6 +1211,25 @@
             showUploadSuccess(`${names.length}명의 참가자를 불러왔습니다! "🎯 원판에 적용하기" 버튼을 눌러주세요.`);
         }
 
+        function loadPracticeFile() {
+            const practiceNames = [
+                '서지원', '원해성', '홍미영', '조은경', '정소영', '안슬기', '박혜경', '이근철',
+                '새론망고스틴', '권민정', '박소윤', '최정현', '이춘옥', '감나무', '박미주', '이경미',
+                '꼬맹', '이해진', '이현주', '윤순희', '천진숙', '권미정', '김진형', '이지윤',
+                '박종욱', '아그들셋', '박지영', '류지영', '정선화', '홍금례', '스트롱사이다', '도도도'
+            ];
+            
+            participants = [...practiceNames];
+            document.getElementById('segmentCount').value = participants.length;
+            updateParticipantsList();
+            
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="upload-status upload-success">📝 연습파일을 불러왔습니다! (${practiceNames.length}명) "🎯 원판에 적용하기" 버튼을 눌러주세요.</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+
         function showUploadSuccess(message) {
             const statusDiv = document.getElementById('uploadStatus');
             statusDiv.innerHTML = `<div class="upload-status upload-success">${message}</div>`;
@@ -1390,5 +1426,5 @@
         initializeParticipants(); // 먼저 기본 참가자 초기화
         loadSavedSettings(); // 그 다음 저장된 설정 확인하여 불러오기 버튼 활성화
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862bc28a623aa65',t:'MTc1OTA1NzIwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862d9b4d064326f',t:'MTc1OTA1ODQxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
