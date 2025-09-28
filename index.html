@@ -155,6 +155,56 @@
             z-index: 5;
         }
 
+        .wheel-top-button {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+            border: 3px solid #e67e22;
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .wheel-top-button:hover {
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 6px 20px rgba(241, 196, 15, 0.6);
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .wheel-top-button:active {
+            transform: translateX(-50%) translateY(-1px);
+            box-shadow: 0 2px 10px rgba(241, 196, 15, 0.4);
+        }
+
+        .finger-icon {
+            font-size: 1.2rem;
+            animation: point-bounce 2s ease-in-out infinite;
+        }
+
+        .button-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        @keyframes point-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
         .spin-btn {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
             color: white;
@@ -214,6 +264,19 @@
 
         .file-upload-btn:hover {
             background: #5a67d8;
+        }
+
+        .file-upload-btn#loadPreviousBtn {
+            background: #9b59b6;
+        }
+
+        .file-upload-btn#loadPreviousBtn:hover {
+            background: #8e44ad;
+        }
+
+        .file-upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
 
         .reset-btn {
@@ -511,10 +574,14 @@
             <div class="wheel-container">
                 <div class="wheel-wrapper">
                     <div class="wheel-pointer"></div>
+                    <div class="wheel-top-button" onclick="spinWheel()">
+                        <div class="finger-icon">👇</div>
+                        <div class="button-text">돌리기</div>
+                    </div>
                     <div class="wheel" id="wheel"></div>
                     <div class="wheel-center"></div>
                 </div>
-                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">돌림판 돌리기! 🎲</button>
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">돌림판 돌리기! <span style="font-size: 1.8rem;">🎲</span></button>
             </div>
 
             <div class="participants-section">
@@ -525,12 +592,14 @@
                     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                         <input type="file" id="fileInput" class="file-input" accept=".txt,.csv" onchange="handleFileUpload(event)">
                         <button class="file-upload-btn" onclick="document.getElementById('fileInput').click()">파일 선택</button>
+                        <button class="file-upload-btn" id="loadPreviousBtn" onclick="loadPreviousSettings()" disabled title="이전 설정이 없습니다">📋 불러오기</button>
                         <button class="reset-btn" onclick="resetToDefault()">🔄 기본값으로 되돌리기</button>
                     </div>
                     <div class="upload-info">
                         지원 형식: 텍스트(.txt), CSV(.csv)<br>
                         각 줄마다 한 명씩 또는 쉼표로 구분하여 작성해주세요<br>
-                        <strong>💡 한글 깨짐 방지:</strong> 메모장에서 "다른 이름으로 저장" → 인코딩을 "UTF-8"로 선택하여 저장
+                        <strong>💡 한글 깨짐 방지:</strong> 메모장에서 "다른 이름으로 저장" → 인코딩을 "UTF-8"로 선택하여 저장<br>
+                        <strong>📋 불러오기:</strong> 바로 직전에 적용했던 돌림판 설정을 다시 불러옵니다
                     </div>
                     <div id="uploadStatus"></div>
                 </div>
@@ -556,6 +625,8 @@
         let isRainbow = false;
         let isSpinning = false;
         let participants = ['참가자1', '참가자2', '참가자3', '참가자4', '참가자5', '참가자6', '참가자7', '참가자8'];
+        let previousSettings = null;
+        let segmentAngles = []; // 각 구간의 시작 각도를 저장
 
         const pastelColors = [
             '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', 
@@ -587,7 +658,6 @@
                 participants.push(`참가자${participants.length + 1}`);
                 document.getElementById('segmentCount').value = participants.length;
                 updateParticipantsList();
-                // updateWheel(); 제거 - 참가자 추가 시 자동으로 원판에 적용하지 않음
             }
         }
 
@@ -596,13 +666,12 @@
                 participants.splice(index, 1);
                 document.getElementById('segmentCount').value = participants.length;
                 updateParticipantsList();
-                // updateWheel(); 제거 - 참가자 제거 시 자동으로 원판에 적용하지 않음
             }
         }
 
         function updateParticipant(index, value) {
-            participants[index] = value || `참가자${index + 1}`;
-            // updateWheel(); 제거 - 참가자 이름 수정 시 자동으로 원판에 적용하지 않음
+            const newName = value || `참가자${index + 1}`;
+            participants[index] = newName;
         }
 
         document.getElementById('segmentCount').addEventListener('change', function() {
@@ -615,7 +684,10 @@
                     participants.pop();
                 }
                 updateParticipantsList();
-                // updateWheel(); 제거 - 참가자 수 변경 시 자동으로 원판에 적용하지 않음
+                updateWheel(); // 원판도 즉시 업데이트
+            } else if (count > 101) {
+                alert('최대 101명까지만 가능합니다.');
+                this.value = participants.length;
             }
         });
 
@@ -636,6 +708,12 @@
             const wheel = document.getElementById('wheel');
             const segmentCount = participants.length;
             const anglePerSegment = 360 / segmentCount;
+            
+            // 각 구간의 시작 각도 저장 (0도부터 시작)
+            segmentAngles = [];
+            for (let i = 0; i < segmentCount; i++) {
+                segmentAngles.push(i * anglePerSegment);
+            }
             
             wheel.innerHTML = '';
             
@@ -727,31 +805,61 @@
             
             isSpinning = true;
             const spinBtn = document.getElementById('spinBtn');
+            const topBtn = document.querySelector('.wheel-top-button');
             spinBtn.disabled = true;
             spinBtn.textContent = '돌리는 중...';
+            topBtn.style.pointerEvents = 'none';
+            topBtn.style.opacity = '0.6';
             
             const wheel = document.getElementById('wheel');
             const segmentCount = participants.length;
             const anglePerSegment = 360 / segmentCount;
             
-            const minSpins = 5;
-            const maxSpins = 10;
-            const spins = Math.random() * (maxSpins - minSpins) + minSpins;
-            const finalAngle = Math.random() * 360;
-            const totalRotation = spins * 360 + finalAngle;
+            // 랜덤하게 당첨자 선택 (배열 인덱스 기반)
+            const winnerIndex = Math.floor(Math.random() * segmentCount);
+            const winner = participants[winnerIndex];
+            
+            console.log(`선택된 당첨자: ${winner} (인덱스: ${winnerIndex})`);
+            
+            // 해당 구간의 중앙을 포인터가 가리키도록 계산
+            const targetSegmentCenter = winnerIndex * anglePerSegment + (anglePerSegment / 2);
+            
+            // 포인터가 12시 방향(0도)에 있으므로, 돌림판을 얼마나 돌려야 하는지 계산
+            // 포인터가 목표 구간을 가리키려면: 360 - targetSegmentCenter 만큼 돌려야 함
+            const baseRotation = 360 - targetSegmentCenter;
+            
+            // 추가 회전 (최소 5바퀴, 최대 10바퀴)
+            const extraSpins = Math.floor(Math.random() * 6 + 5); // 5~10바퀴
+            const totalRotation = baseRotation + (extraSpins * 360);
+            
+            console.log(`목표 구간 중앙: ${targetSegmentCenter}도`);
+            console.log(`기본 회전: ${baseRotation}도`);
+            console.log(`추가 회전: ${extraSpins}바퀴`);
+            console.log(`총 회전: ${totalRotation}도`);
             
             wheel.style.transform = `rotate(${totalRotation}deg)`;
             
             setTimeout(() => {
-                const normalizedAngle = (360 - (finalAngle % 360)) % 360;
-                const winnerIndex = Math.floor(normalizedAngle / anglePerSegment);
-                const winner = participants[winnerIndex];
+                // 검증: 최종 위치 확인
+                const finalAngle = totalRotation % 360;
+                const normalizedAngle = finalAngle < 0 ? finalAngle + 360 : finalAngle;
+                const pointerAngle = (360 - normalizedAngle) % 360;
+                const calculatedIndex = Math.floor(pointerAngle / anglePerSegment);
+                const calculatedWinner = participants[calculatedIndex];
                 
+                console.log(`검증 - 최종 각도: ${normalizedAngle}도`);
+                console.log(`검증 - 포인터 각도: ${pointerAngle}도`);
+                console.log(`검증 - 계산된 인덱스: ${calculatedIndex}`);
+                console.log(`검증 - 계산된 당첨자: ${calculatedWinner}`);
+                
+                // 원래 선택한 당첨자 표시 (검증과 관계없이)
                 showWinner(winner);
                 
                 isSpinning = false;
                 spinBtn.disabled = false;
                 spinBtn.textContent = '돌림판 돌리기! 🎲';
+                topBtn.style.pointerEvents = 'auto';
+                topBtn.style.opacity = '1';
             }, 3000);
         }
 
@@ -1077,10 +1185,11 @@
                 return;
             }
 
+            // 파일에서 읽은 참가자 수에 맞춰 자동으로 조정
             participants = names;
             document.getElementById('segmentCount').value = participants.length;
+            document.getElementById('segmentCount').max = Math.max(101, participants.length); // 최대값도 조정
             updateParticipantsList();
-            // updateWheel(); 제거 - 파일 업로드 시 자동으로 원판에 적용하지 않음
             
             showUploadSuccess(`${names.length}명의 참가자를 불러왔습니다! "🎯 원판에 적용하기" 버튼을 눌러주세요.`);
         }
@@ -1115,6 +1224,101 @@
             }, 2000);
         }
 
+        // 🆕 새로운 기능: 이전 설정 저장 및 불러오기 (로컬 저장소 포함)
+
+        // 불러오기 버튼 상태 업데이트
+        function updateLoadButton() {
+            const loadBtn = document.getElementById('loadPreviousBtn');
+            if (loadBtn && previousSettings && previousSettings.participants && previousSettings.participants.length >= 2) {
+                loadBtn.disabled = false;
+                loadBtn.title = `이전 설정 불러오기 (${previousSettings.participants.length}명, ${previousSettings.timestamp})`;
+                loadBtn.textContent = `📋 불러오기 (${previousSettings.participants.length}명)`;
+            } else if (loadBtn) {
+                loadBtn.disabled = true;
+                loadBtn.title = '이전 설정이 없습니다';
+                loadBtn.textContent = '📋 불러오기';
+            }
+        }
+
+        // 🆕 페이지 로드시 저장된 설정 자동 불러오기
+        function loadSavedSettings() {
+            try {
+                const saved = localStorage.getItem('wheelSettings');
+                console.log('로컬 저장소에서 불러온 데이터:', saved);
+                
+                if (saved) {
+                    const savedSettings = JSON.parse(saved);
+                    console.log('파싱된 설정:', savedSettings);
+                    
+                    // 저장된 설정이 유효한지 확인
+                    if (savedSettings.participants && Array.isArray(savedSettings.participants) && savedSettings.participants.length >= 2) {
+                        previousSettings = savedSettings;
+                        console.log('유효한 설정 발견:', savedSettings.participants.length + '명');
+                        
+                        // 불러오기 버튼 활성화
+                        updateLoadButton();
+                    } else {
+                        console.log('저장된 설정이 유효하지 않음');
+                    }
+                } else {
+                    console.log('저장된 설정이 없음');
+                }
+            } catch (error) {
+                console.log('저장된 설정 불러오기 실패:', error);
+            }
+        }
+
+        function loadPreviousSettings() {
+            console.log('불러오기 버튼 클릭됨');
+            console.log('현재 previousSettings:', previousSettings);
+            
+            if (!previousSettings || !previousSettings.participants || previousSettings.participants.length < 2) {
+                alert('불러올 이전 설정이 없습니다.');
+                return;
+            }
+            
+            console.log('불러올 참가자 수:', previousSettings.participants.length);
+            console.log('참가자 목록:', previousSettings.participants);
+            
+            // 이전 참가자 목록 복원
+            participants = [...previousSettings.participants];
+            document.getElementById('segmentCount').value = participants.length;
+            
+            // 이전 색상 테마 복원
+            if (previousSettings.isRainbow !== isRainbow) {
+                toggleColorScheme();
+            }
+            
+            // 돌림판 회전 상태 완전히 초기화
+            const wheel = document.getElementById('wheel');
+            wheel.style.transition = 'none'; // 애니메이션 일시 중지
+            wheel.style.transform = 'rotate(0deg)'; // 회전 초기화
+            
+            // UI 업데이트 - 순서가 중요합니다!
+            updateParticipantsList(); // 먼저 참가자 목록 UI 업데이트
+            updateWheel(); // 그 다음 원판 완전히 새로 그리기
+            
+            // 애니메이션 다시 활성화 (약간의 지연 후)
+            setTimeout(() => {
+                wheel.style.transition = 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)';
+            }, 100);
+            
+            // 성공 메시지 표시
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="upload-status upload-success">✅ 이전 설정을 불러왔습니다! (${previousSettings.participants.length}명, ${previousSettings.timestamp})</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+            
+            console.log('불러오기 완료');
+        }
+
+        // 🆕 현재 원판에 적용된 설정을 전역 변수로 추적
+        let currentWheelSettings = {
+            participants: ['참가자1', '참가자2', '참가자3', '참가자4', '참가자5', '참가자6', '참가자7', '참가자8'],
+            isRainbow: false
+        };
+
         function applyParticipantsToWheel() {
             // 현재 입력된 참가자들을 수집
             const inputs = document.querySelectorAll('#participantsList input');
@@ -1137,9 +1341,42 @@
                 return;
             }
             
+            // 🎯 진짜 이전 설정 저장: 현재 원판에 적용된 설정을 저장
+            if (currentWheelSettings.participants && currentWheelSettings.participants.length >= 2) {
+                previousSettings = {
+                    participants: [...currentWheelSettings.participants], // 현재 원판의 실제 설정 저장
+                    isRainbow: currentWheelSettings.isRainbow,
+                    timestamp: new Date().toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                };
+                
+                // 브라우저 로컬 저장소에도 저장
+                try {
+                    localStorage.setItem('wheelSettings', JSON.stringify(previousSettings));
+                    console.log('이전 설정 저장됨:', previousSettings.participants.length + '명');
+                } catch (error) {
+                    console.log('로컬 저장소 저장 실패:', error);
+                }
+            }
+            
+            // 새로운 설정을 원판에 적용
             participants = newParticipants;
             document.getElementById('segmentCount').value = participants.length;
             updateWheel();
+            
+            // 🆕 현재 원판 설정 업데이트
+            currentWheelSettings = {
+                participants: [...newParticipants],
+                isRainbow: isRainbow
+            };
+            
+            // 불러오기 버튼 업데이트 (이전 설정 기준으로)
+            updateLoadButton();
             
             // 성공 메시지 표시
             const statusDiv = document.getElementById('uploadStatus');
@@ -1150,7 +1387,8 @@
         }
 
         // 초기화
-        initializeParticipants();
+        initializeParticipants(); // 먼저 기본 참가자 초기화
+        loadSavedSettings(); // 그 다음 저장된 설정 확인하여 불러오기 버튼 활성화
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862371da60b723a',t:'MTc1OTA1MTc1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9862bc28a623aa65',t:'MTc1OTA1NzIwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
